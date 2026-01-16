@@ -25,7 +25,8 @@ export async function GET(
 
     // If we have the label stored, return it
     if (shipment.labelData) {
-      return new NextResponse(shipment.labelData, {
+      const uint8Array = new Uint8Array(shipment.labelData);
+      return new NextResponse(uint8Array, {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `attachment; filename="${shipment.labelFileName || "label.pdf"}"`,
@@ -54,7 +55,8 @@ export async function GET(
       },
     });
 
-    return new NextResponse(labelData, {
+    const uint8Array = new Uint8Array(labelData);
+    return new NextResponse(uint8Array, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="label-${shipment.consignmentNumber}.pdf"`,

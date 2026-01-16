@@ -74,6 +74,17 @@ const ShipmentResponseSchema = z.object({
   error: z.string().optional(),
 });
 
+const QuoteResponseItemSchema = z.object({
+  providerId: z.number(),
+  providerName: z.string(),
+  serviceType: z.string(),
+  basePrice: z.number(),
+  ruralSurcharge: z.number(),
+  gst: z.number(),
+  totalPrice: z.number(),
+  estimatedDays: z.number().optional(),
+});
+
 // Types
 export type ParcelItem = z.infer<typeof ParcelItemSchema>;
 export type Address = z.infer<typeof AddressSchema>;

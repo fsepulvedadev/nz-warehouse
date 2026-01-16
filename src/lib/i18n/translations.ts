@@ -145,6 +145,11 @@ export const translations = {
     noShipmentsFoundDesc: "Crea envíos desde la página de Órdenes",
     searchShipmentsPlaceholder: "Buscar por número de orden, cliente o tracking...",
     
+    // Mobile specific
+    view: "Ver",
+    label: "Etiqueta",
+    track: "Rastrear",
+    
     // Errors
     failedToLoadOrders: "Error al cargar órdenes",
     failedToLoadOrderDetails: "Error al cargar detalles de la orden",
@@ -296,6 +301,11 @@ export const translations = {
     noShipmentsFound: "No shipments found",
     noShipmentsFoundDesc: "Create shipments from the Orders page",
     searchShipmentsPlaceholder: "Search by order number, customer, or tracking...",
+    
+    // Mobile specific
+    view: "View",
+    label: "Label",
+    track: "Track",
     
     // Errors
     failedToLoadOrders: "Failed to load orders",

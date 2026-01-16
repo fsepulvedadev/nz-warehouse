@@ -36,6 +36,7 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  MapPin,
 } from "lucide-react";
 import { OrderStatus } from "@prisma/client";
 import { useI18n } from "@/lib/i18n/context";
@@ -136,22 +137,92 @@ export default function OrdersPage() {
     return (
       <Badge variant={config.variant} className="gap-1">
         <Icon className="h-3 w-3" />
-        {t(config.labelKey)}
+        <span className="hidden sm:inline">{t(config.labelKey)}</span>
       </Badge>
     );
   };
 
+  // Mobile Order Card Component
+  const OrderCard = ({ order }: { order: Order }) => {
+    const config = statusConfigMap[order.status];
+    const Icon = config.icon;
+    
+    return (
+      <Card 
+        className="cursor-pointer hover:shadow-md transition-shadow"
+        onClick={() => router.push(`/orders/${order.id}`)}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-semibold text-slate-900 truncate">
+                  {order.orderNumber || order.cartonCloudId.slice(0, 8)}
+                </span>
+                <Badge variant={config.variant} className="gap-1 shrink-0">
+                  <Icon className="h-3 w-3" />
+                  <span className="text-xs">{t(config.labelKey)}</span>
+                </Badge>
+              </div>
+              <p className="text-sm text-slate-600 truncate">{order.customerName}</p>
+              <div className="flex items-center gap-1 mt-1 text-xs text-slate-500">
+                <MapPin className="h-3 w-3" />
+                <span>{order.deliveryCity || "—"}</span>
+                {order.deliveryPostcode && (
+                  <span className="text-slate-400">({order.deliveryPostcode})</span>
+                )}
+                {order.isRural && (
+                  <Badge variant="outline" className="ml-1 text-xs py-0">Rural</Badge>
+                )}
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              {order.quotations.length > 0 ? (
+                <span className="text-emerald-600 font-bold">
+                  ${order.quotations[0].totalPrice.toFixed(2)}
+                </span>
+              ) : (
+                <span className="text-slate-400 text-sm">—</span>
+              )}
+            </div>
+          </div>
+          
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t" onClick={(e) => e.stopPropagation()}>
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => router.push(`/orders/${order.id}`)}>
+              <Eye className="h-4 w-4 mr-1" />
+              {t("view")}
+            </Button>
+            {(order.status === "READY_TO_QUOTE" || order.status === "QUOTED") && (
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => handleQuote(order.id)}>
+                <Calculator className="h-4 w-4 mr-1" />
+                {t("quote")}
+              </Button>
+            )}
+            {order.shipment && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/api/courier/label/${order.shipment}`} target="_blank">
+                  <Download className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t("ordersTitle")}</h1>
-          <p className="text-slate-600 mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{t("ordersTitle")}</h1>
+          <p className="text-sm sm:text-base text-slate-600 mt-1">
             {t("ordersSubtitle")}
           </p>
         </div>
-        <Button onClick={fetchOrders} disabled={isLoading}>
+        <Button onClick={fetchOrders} disabled={isLoading} size="sm" className="w-full sm:w-auto">
           <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
           {t("syncOrders")}
         </Button>
@@ -159,8 +230,8 @@ export default function OrdersPage() {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4">
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
+        <CardContent className="p-3 sm:p-4">
+          <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
@@ -170,46 +241,51 @@ export default function OrdersPage() {
                 className="pl-9"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder={t("filterByStatus")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("allStatuses")}</SelectItem>
-                <SelectItem value="PENDING_DATA">{t("pendingData")}</SelectItem>
-                <SelectItem value="READY_TO_QUOTE">{t("readyToQuote")}</SelectItem>
-                <SelectItem value="QUOTED">{t("quoted")}</SelectItem>
-                <SelectItem value="LABEL_CREATED">{t("labelCreated")}</SelectItem>
-                <SelectItem value="ERROR">{t("error")}</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button type="submit">{t("search")}</Button>
+            <div className="flex gap-2 sm:gap-4">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="flex-1 sm:w-48">
+                  <SelectValue placeholder={t("filterByStatus")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("allStatuses")}</SelectItem>
+                  <SelectItem value="PENDING_DATA">{t("pendingData")}</SelectItem>
+                  <SelectItem value="READY_TO_QUOTE">{t("readyToQuote")}</SelectItem>
+                  <SelectItem value="QUOTED">{t("quoted")}</SelectItem>
+                  <SelectItem value="LABEL_CREATED">{t("labelCreated")}</SelectItem>
+                  <SelectItem value="ERROR">{t("error")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button type="submit" className="shrink-0">{t("search")}</Button>
+            </div>
           </form>
         </CardContent>
       </Card>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Stats - Scrollable on mobile */}
+      <div className="flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-5 sm:gap-4 sm:overflow-visible sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
         {Object.entries(statusConfigMap).map(([status, config]) => {
           const count = orders.filter((o) => o.status === status).length;
           const Icon = config.icon;
           
           return (
-            <Card key={status} className="cursor-pointer hover:border-slate-300 transition-colors"
-              onClick={() => setStatusFilter(status)}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
+            <Card 
+              key={status} 
+              className="cursor-pointer hover:border-slate-300 transition-colors shrink-0 w-32 sm:w-auto"
+              onClick={() => setStatusFilter(status)}
+            >
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className={`p-1.5 sm:p-2 rounded-lg ${
                     status === "LABEL_CREATED" ? "bg-emerald-100 text-emerald-600" :
                     status === "ERROR" ? "bg-red-100 text-red-600" :
                     status === "QUOTED" ? "bg-blue-100 text-blue-600" :
                     "bg-slate-100 text-slate-600"
                   }`}>
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{count}</p>
-                    <p className="text-xs text-slate-500">{t(config.labelKey)}</p>
+                    <p className="text-lg sm:text-2xl font-bold">{count}</p>
+                    <p className="text-xs text-slate-500 whitespace-nowrap">{t(config.labelKey)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -218,16 +294,42 @@ export default function OrdersPage() {
         })}
       </div>
 
-      {/* Orders Table */}
+      {/* Orders - Mobile Cards / Desktop Table */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Package className="h-5 w-5" />
+          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+            <Package className="h-4 w-4 sm:h-5 sm:w-5" />
             {t("orderList")}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {/* Mobile: Cards view */}
+          <div className="block md:hidden p-3 space-y-3">
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-4">
+                    <Skeleton className="h-4 w-24 mb-2" />
+                    <Skeleton className="h-3 w-32 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : orders.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 text-slate-500 py-8">
+                <Package className="h-8 w-8" />
+                <p>{t("noOrdersFound")}</p>
+                <p className="text-sm">{t("noOrdersFoundDesc")}</p>
+              </div>
+            ) : (
+              orders.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))
+            )}
+          </div>
+
+          {/* Desktop: Table view */}
+          <div className="hidden md:block overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -320,13 +422,11 @@ export default function OrdersPage() {
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t">
-              <p className="text-sm text-slate-500">
-                {t("showingOrders")} {((pagination.page - 1) * pagination.perPage) + 1} - {" "}
-                {Math.min(pagination.page * pagination.perPage, pagination.total)} {t("of")}{" "}
-                {pagination.total} {t("ordersText")}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-4 py-3 border-t">
+              <p className="text-xs sm:text-sm text-slate-500 order-2 sm:order-1">
+                {((pagination.page - 1) * pagination.perPage) + 1}-{Math.min(pagination.page * pagination.perPage, pagination.total)} {t("of")} {pagination.total}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 order-1 sm:order-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -335,8 +435,8 @@ export default function OrdersPage() {
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm px-2">
-                  {t("page")} {pagination.page} {t("of")} {pagination.totalPages}
+                <span className="text-sm px-2 min-w-[80px] text-center">
+                  {pagination.page} / {pagination.totalPages}
                 </span>
                 <Button
                   variant="outline"

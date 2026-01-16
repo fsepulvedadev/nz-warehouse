@@ -64,11 +64,30 @@ interface Pagination {
   totalPages: number;
 }
 
-const statusConfigMap: Record<OrderStatus, { labelKey: TranslationKey; icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  PENDING_DATA: { labelKey: "pendingData", icon: AlertCircle, variant: "outline" },
-  READY_TO_QUOTE: { labelKey: "readyToQuote", icon: Clock, variant: "secondary" },
+const statusConfigMap: Record<
+  OrderStatus,
+  {
+    labelKey: TranslationKey;
+    icon: React.ElementType;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
+> = {
+  PENDING_DATA: {
+    labelKey: "pendingData",
+    icon: AlertCircle,
+    variant: "outline",
+  },
+  READY_TO_QUOTE: {
+    labelKey: "readyToQuote",
+    icon: Clock,
+    variant: "secondary",
+  },
   QUOTED: { labelKey: "quoted", icon: Calculator, variant: "default" },
-  LABEL_CREATED: { labelKey: "labelCreated", icon: CheckCircle, variant: "default" },
+  LABEL_CREATED: {
+    labelKey: "labelCreated",
+    icon: CheckCircle,
+    variant: "default",
+  },
   ERROR: { labelKey: "error", icon: XCircle, variant: "destructive" },
 };
 
@@ -93,12 +112,12 @@ export default function OrdersPage() {
         page: pagination.page.toString(),
         perPage: pagination.perPage.toString(),
       });
-      
+
       if (search) params.set("search", search);
       if (statusFilter !== "all") params.set("status", statusFilter);
 
       const response = await fetch(`/api/carton/orders?${params}`);
-      
+
       if (!response.ok) {
         throw new Error("Error fetching orders");
       }
@@ -133,7 +152,7 @@ export default function OrdersPage() {
   const StatusBadge = ({ status }: { status: OrderStatus }) => {
     const config = statusConfigMap[status];
     const Icon = config.icon;
-    
+
     return (
       <Badge variant={config.variant} className="gap-1">
         <Icon className="h-3 w-3" />
@@ -146,9 +165,9 @@ export default function OrdersPage() {
   const OrderCard = ({ order }: { order: Order }) => {
     const config = statusConfigMap[order.status];
     const Icon = config.icon;
-    
+
     return (
-      <Card 
+      <Card
         className="cursor-pointer hover:shadow-md transition-shadow"
         onClick={() => router.push(`/orders/${order.id}`)}
       >
@@ -164,15 +183,21 @@ export default function OrdersPage() {
                   <span className="text-xs">{t(config.labelKey)}</span>
                 </Badge>
               </div>
-              <p className="text-sm text-slate-600 truncate">{order.customerName}</p>
+              <p className="text-sm text-slate-600 truncate">
+                {order.customerName}
+              </p>
               <div className="flex items-center gap-1 mt-1 text-xs text-slate-500">
                 <MapPin className="h-3 w-3" />
                 <span>{order.deliveryCity || "—"}</span>
                 {order.deliveryPostcode && (
-                  <span className="text-slate-400">({order.deliveryPostcode})</span>
+                  <span className="text-slate-400">
+                    ({order.deliveryPostcode})
+                  </span>
                 )}
                 {order.isRural && (
-                  <Badge variant="outline" className="ml-1 text-xs py-0">Rural</Badge>
+                  <Badge variant="outline" className="ml-1 text-xs py-0">
+                    Rural
+                  </Badge>
                 )}
               </div>
             </div>
@@ -186,22 +211,39 @@ export default function OrdersPage() {
               )}
             </div>
           </div>
-          
+
           {/* Action buttons */}
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t" onClick={(e) => e.stopPropagation()}>
-            <Button variant="outline" size="sm" className="flex-1" onClick={() => router.push(`/orders/${order.id}`)}>
+          <div
+            className="flex items-center gap-2 mt-3 pt-3 border-t"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => router.push(`/orders/${order.id}`)}
+            >
               <Eye className="h-4 w-4 mr-1" />
               {t("view")}
             </Button>
-            {(order.status === "READY_TO_QUOTE" || order.status === "QUOTED") && (
-              <Button variant="outline" size="sm" className="flex-1" onClick={() => handleQuote(order.id)}>
+            {(order.status === "READY_TO_QUOTE" ||
+              order.status === "QUOTED") && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => handleQuote(order.id)}
+              >
                 <Calculator className="h-4 w-4 mr-1" />
                 {t("quote")}
               </Button>
             )}
             {order.shipment && (
               <Button variant="outline" size="sm" asChild>
-                <a href={`/api/courier/label/${order.shipment}`} target="_blank">
+                <a
+                  href={`/api/courier/label/${order.shipment}`}
+                  target="_blank"
+                >
                   <Download className="h-4 w-4" />
                 </a>
               </Button>
@@ -217,13 +259,22 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{t("ordersTitle")}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+            {t("ordersTitle")}
+          </h1>
           <p className="text-sm sm:text-base text-slate-600 mt-1">
             {t("ordersSubtitle")}
           </p>
         </div>
-        <Button onClick={fetchOrders} disabled={isLoading} size="sm" className="w-full sm:w-auto">
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+        <Button
+          onClick={fetchOrders}
+          disabled={isLoading}
+          size="sm"
+          className="w-full sm:w-auto"
+        >
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+          />
           {t("syncOrders")}
         </Button>
       </div>
@@ -231,7 +282,10 @@ export default function OrdersPage() {
       {/* Filters */}
       <Card>
         <CardContent className="p-3 sm:p-4">
-          <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+          <form
+            onSubmit={handleSearch}
+            className="flex flex-col gap-3 sm:flex-row sm:gap-4"
+          >
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
@@ -248,44 +302,59 @@ export default function OrdersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("allStatuses")}</SelectItem>
-                  <SelectItem value="PENDING_DATA">{t("pendingData")}</SelectItem>
-                  <SelectItem value="READY_TO_QUOTE">{t("readyToQuote")}</SelectItem>
+                  <SelectItem value="PENDING_DATA">
+                    {t("pendingData")}
+                  </SelectItem>
+                  <SelectItem value="READY_TO_QUOTE">
+                    {t("readyToQuote")}
+                  </SelectItem>
                   <SelectItem value="QUOTED">{t("quoted")}</SelectItem>
-                  <SelectItem value="LABEL_CREATED">{t("labelCreated")}</SelectItem>
+                  <SelectItem value="LABEL_CREATED">
+                    {t("labelCreated")}
+                  </SelectItem>
                   <SelectItem value="ERROR">{t("error")}</SelectItem>
                 </SelectContent>
               </Select>
-              <Button type="submit" className="shrink-0">{t("search")}</Button>
+              <Button type="submit" className="shrink-0">
+                {t("search")}
+              </Button>
             </div>
           </form>
         </CardContent>
       </Card>
 
-      {/* Stats - Scrollable on mobile */}
-      <div className="flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-5 sm:gap-4 sm:overflow-visible sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
+      {/* Stats - Grid on mobile */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
         {Object.entries(statusConfigMap).map(([status, config]) => {
           const count = orders.filter((o) => o.status === status).length;
           const Icon = config.icon;
-          
+
           return (
-            <Card 
-              key={status} 
-              className="cursor-pointer hover:border-slate-300 transition-colors shrink-0 w-32 sm:w-auto"
+            <Card
+              key={status}
+              className="cursor-pointer hover:border-slate-300 transition-colors"
               onClick={() => setStatusFilter(status)}
             >
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className={`p-1.5 sm:p-2 rounded-lg ${
-                    status === "LABEL_CREATED" ? "bg-emerald-100 text-emerald-600" :
-                    status === "ERROR" ? "bg-red-100 text-red-600" :
-                    status === "QUOTED" ? "bg-blue-100 text-blue-600" :
-                    "bg-slate-100 text-slate-600"
-                  }`}>
+                  <div
+                    className={`p-1.5 sm:p-2 rounded-lg ${
+                      status === "LABEL_CREATED"
+                        ? "bg-emerald-100 text-emerald-600"
+                        : status === "ERROR"
+                        ? "bg-red-100 text-red-600"
+                        : status === "QUOTED"
+                        ? "bg-blue-100 text-blue-600"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
                     <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
                   </div>
                   <div>
                     <p className="text-lg sm:text-2xl font-bold">{count}</p>
-                    <p className="text-xs text-slate-500 whitespace-nowrap">{t(config.labelKey)}</p>
+                    <p className="text-xs text-slate-500 whitespace-nowrap">
+                      {t(config.labelKey)}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -322,9 +391,7 @@ export default function OrdersPage() {
                 <p className="text-sm">{t("noOrdersFoundDesc")}</p>
               </div>
             ) : (
-              orders.map((order) => (
-                <OrderCard key={order.id} order={order} />
-              ))
+              orders.map((order) => <OrderCard key={order.id} order={order} />)
             )}
           </div>
 
@@ -345,12 +412,24 @@ export default function OrdersPage() {
                 {isLoading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                      <TableCell><Skeleton className="h-6 w-28" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-6 w-28" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-16" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-8 w-24 ml-auto" />
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : orders.length === 0 ? (
@@ -365,8 +444,11 @@ export default function OrdersPage() {
                   </TableRow>
                 ) : (
                   orders.map((order) => (
-                    <TableRow key={order.id} className="cursor-pointer hover:bg-slate-50"
-                      onClick={() => router.push(`/orders/${order.id}`)}>
+                    <TableRow
+                      key={order.id}
+                      className="cursor-pointer hover:bg-slate-50"
+                      onClick={() => router.push(`/orders/${order.id}`)}
+                    >
                       <TableCell className="font-medium">
                         {order.orderNumber || order.cartonCloudId.slice(0, 8)}
                       </TableCell>
@@ -375,10 +457,14 @@ export default function OrdersPage() {
                         <div className="flex items-center gap-1">
                           <span>{order.deliveryCity || "—"}</span>
                           {order.deliveryPostcode && (
-                            <span className="text-slate-400">({order.deliveryPostcode})</span>
+                            <span className="text-slate-400">
+                              ({order.deliveryPostcode})
+                            </span>
                           )}
                           {order.isRural && (
-                            <Badge variant="outline" className="ml-1 text-xs">Rural</Badge>
+                            <Badge variant="outline" className="ml-1 text-xs">
+                              Rural
+                            </Badge>
                           )}
                         </div>
                       </TableCell>
@@ -395,18 +481,33 @@ export default function OrdersPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" onClick={() => router.push(`/orders/${order.id}`)}>
+                        <div
+                          className="flex items-center justify-end gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push(`/orders/${order.id}`)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {(order.status === "READY_TO_QUOTE" || order.status === "QUOTED") && (
-                            <Button variant="ghost" size="sm" onClick={() => handleQuote(order.id)}>
+                          {(order.status === "READY_TO_QUOTE" ||
+                            order.status === "QUOTED") && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleQuote(order.id)}
+                            >
                               <Calculator className="h-4 w-4" />
                             </Button>
                           )}
                           {order.shipment && (
                             <Button variant="ghost" size="sm" asChild>
-                              <a href={`/api/courier/label/${order.shipment}`} target="_blank">
+                              <a
+                                href={`/api/courier/label/${order.shipment}`}
+                                target="_blank"
+                              >
                                 <Download className="h-4 w-4" />
                               </a>
                             </Button>
@@ -424,14 +525,21 @@ export default function OrdersPage() {
           {pagination.totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-4 py-3 border-t">
               <p className="text-xs sm:text-sm text-slate-500 order-2 sm:order-1">
-                {((pagination.page - 1) * pagination.perPage) + 1}-{Math.min(pagination.page * pagination.perPage, pagination.total)} {t("of")} {pagination.total}
+                {(pagination.page - 1) * pagination.perPage + 1}-
+                {Math.min(
+                  pagination.page * pagination.perPage,
+                  pagination.total
+                )}{" "}
+                {t("of")} {pagination.total}
               </p>
               <div className="flex items-center gap-2 order-1 sm:order-2">
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={pagination.page <= 1}
-                  onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                  }
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -442,7 +550,9 @@ export default function OrdersPage() {
                   variant="outline"
                   size="sm"
                   disabled={pagination.page >= pagination.totalPages}
-                  onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                  }
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
